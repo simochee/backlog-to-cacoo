@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { extractIssueData, type IssueData } from "./extract-issue-data";
+import { extractIssueData } from "./extract-issue-data";
 
 describe("extractIssueData", () => {
   beforeEach(() => {
