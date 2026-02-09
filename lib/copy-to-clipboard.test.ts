@@ -1,29 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { copyToClipboard } from "./copy-to-clipboard";
 
+function createCopyEvent(setDataMock: ReturnType<typeof vi.fn>) {
+  const event = new Event("copy", { cancelable: true });
+  Object.defineProperty(event, "clipboardData", {
+    value: { setData: setDataMock },
+  });
+  return event;
+}
+
 describe("copyToClipboard", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    // jsdom does not provide document.execCommand
+    document.execCommand = vi.fn().mockReturnValue(true);
   });
 
   it("calls document.execCommand('copy')", () => {
-    const spy = vi.spyOn(document, "execCommand").mockReturnValue(true);
     copyToClipboard('{"test": true}', "PROJ-123 Fix bug");
-    expect(spy).toHaveBeenCalledWith("copy");
+    expect(document.execCommand).toHaveBeenCalledWith("copy");
   });
 
   it("sets cacoo/shape data on clipboardData", () => {
     const setDataMock = vi.fn();
 
-    vi.spyOn(document, "execCommand").mockImplementation((command) => {
+    vi.mocked(document.execCommand).mockImplementation((command) => {
       if (command === "copy") {
-        const event = new ClipboardEvent("copy", {
-          clipboardData: new DataTransfer(),
-        });
-        Object.defineProperty(event, "clipboardData", {
-          value: { setData: setDataMock },
-        });
-        document.dispatchEvent(event);
+        document.dispatchEvent(createCopyEvent(setDataMock));
       }
       return true;
     });
@@ -39,15 +42,9 @@ describe("copyToClipboard", () => {
   it("sets text/plain data on clipboardData", () => {
     const setDataMock = vi.fn();
 
-    vi.spyOn(document, "execCommand").mockImplementation((command) => {
+    vi.mocked(document.execCommand).mockImplementation((command) => {
       if (command === "copy") {
-        const event = new ClipboardEvent("copy", {
-          clipboardData: new DataTransfer(),
-        });
-        Object.defineProperty(event, "clipboardData", {
-          value: { setData: setDataMock },
-        });
-        document.dispatchEvent(event);
+        document.dispatchEvent(createCopyEvent(setDataMock));
       }
       return true;
     });
@@ -58,7 +55,6 @@ describe("copyToClipboard", () => {
   });
 
   it("removes the copy event listener after execution", () => {
-    vi.spyOn(document, "execCommand").mockReturnValue(true);
     const addSpy = vi.spyOn(document, "addEventListener");
     const removeSpy = vi.spyOn(document, "removeEventListener");
 
@@ -69,24 +65,18 @@ describe("copyToClipboard", () => {
   });
 
   it("prevents default on the copy event", () => {
-    const preventDefaultMock = vi.fn();
+    const setDataMock = vi.fn();
 
-    vi.spyOn(document, "execCommand").mockImplementation((command) => {
+    vi.mocked(document.execCommand).mockImplementation((command) => {
       if (command === "copy") {
-        const event = new ClipboardEvent("copy", {
-          clipboardData: new DataTransfer(),
-        });
-        Object.defineProperty(event, "clipboardData", {
-          value: { setData: vi.fn() },
-        });
-        event.preventDefault = preventDefaultMock;
+        const event = createCopyEvent(setDataMock);
+        const preventDefaultSpy = vi.spyOn(event, "preventDefault");
         document.dispatchEvent(event);
+        expect(preventDefaultSpy).toHaveBeenCalled();
       }
       return true;
     });
 
     copyToClipboard('{"test": true}', "text");
-
-    expect(preventDefaultMock).toHaveBeenCalled();
   });
 });
