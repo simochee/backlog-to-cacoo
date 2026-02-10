@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "no-unused-vars": "error",
+    "no-console": "warn",
+    "eqeqeq": "error",
+    "sort-imports": "warn",
+    "func-style": "off",
+    "max-statements": "off",
+    "unicorn/no-null": "off",
+    "unicorn/prefer-global-this": "off",
+    "import/no-named-export": "off",
+    "import/exports-last": "off",
+    "import/no-default-export": "off"
+  },
+  "ignorePatterns": ["dist", ".output", ".wxt", "node_modules"]
+}

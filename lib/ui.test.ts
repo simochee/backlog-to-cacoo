@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { injectCopyButton, showToast } from "./ui";
 
 describe("injectCopyButton", () => {
@@ -9,17 +9,13 @@ describe("injectCopyButton", () => {
   it("creates a button element in the document", () => {
     // TODO: 実際の Backlog DOM にはボタンの挿入先要素が必要。ここでは body 直下に挿入されることをテスト。
     injectCopyButton(() => {});
-    const button = document.querySelector(
-      "[data-testid='cacoo-copy-button']",
-    );
+    const button = document.querySelector("[data-testid='cacoo-copy-button']");
     expect(button).not.toBeNull();
   });
 
   it("button has correct label text", () => {
     injectCopyButton(() => {});
-    const button = document.querySelector(
-      "[data-testid='cacoo-copy-button']",
-    );
+    const button = document.querySelector("[data-testid='cacoo-copy-button']");
     expect(button?.textContent).toBe("Copy to Cacoo");
   });
 

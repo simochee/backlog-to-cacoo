@@ -1,7 +1,6 @@
 import styles from "./ui.module.css";
 
 const BUTTON_SELECTOR = "[data-testid='cacoo-copy-button']";
-const TOAST_SELECTOR = "[data-testid='cacoo-toast']";
 
 /**
  * Backlog 課題ページに「Copy to Cacoo」ボタンを挿入する。
@@ -11,7 +10,9 @@ const TOAST_SELECTOR = "[data-testid='cacoo-toast']";
  *       現状は body 末尾に追加している。
  */
 export function injectCopyButton(onClick: () => void): void {
-  if (document.querySelector(BUTTON_SELECTOR)) return;
+  if (document.querySelector(BUTTON_SELECTOR)) {
+    return;
+  }
 
   const button = document.createElement("button");
   button.setAttribute("data-testid", "cacoo-copy-button");

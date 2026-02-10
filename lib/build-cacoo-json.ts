@@ -5,8 +5,12 @@ const COLOR_BLUE = "#4B91FA";
 const COLOR_GREEN = "#69C955";
 
 export function resolveColor(type: string, priority: string): string {
-  if (type === "バグ" || priority === "高") return COLOR_RED;
-  if (priority === "低") return COLOR_GREEN;
+  if (type === "バグ" || priority === "高") {
+    return COLOR_RED;
+  }
+  if (priority === "低") {
+    return COLOR_GREEN;
+  }
   return COLOR_BLUE;
 }
 
@@ -18,8 +22,6 @@ export function buildCacooJson(issue: IssueData): string {
   const color = resolveColor(issue.type, issue.priority);
 
   const payload = {
-    target: "shapes",
-    sheetId: "generated",
     shapes: [
       {
         uid: crypto.randomUUID(),
@@ -78,6 +80,8 @@ export function buildCacooJson(issue: IssueData): string {
         },
       },
     ],
+    sheetId: "generated",
+    target: "shapes",
   };
 
   return JSON.stringify(payload);
