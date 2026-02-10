@@ -11,10 +11,8 @@ export function resolveColor(type: string, priority: string): string {
 }
 
 export function buildCacooJson(issue: IssueData): string {
-  const description = issue.assignee
-    ? `${issue.summary}\n(担当: ${issue.assignee})`
-    : issue.summary;
-
+  const description = issue.assignee ? `担当: ${issue.assignee}` : "";
+  const titleText = `${issue.key} ${issue.summary}`;
   const color = resolveColor(issue.type, issue.priority);
 
   const payload = {
@@ -35,18 +33,33 @@ export function buildCacooJson(issue: IssueData): string {
         cardType: 0,
         cacoo: {
           title: {
-            text: issue.key,
+            text: titleText,
             leading: 6,
             styles: [
               {
                 index: 0,
                 font: "Open Sans",
                 size: 14,
+                color: "2488fd",
+                bold: true,
+                underline: true,
+              },
+              {
+                index: issue.key.length,
+                font: "Open Sans",
+                size: 14,
                 color: "333333",
                 bold: true,
               },
             ],
-            links: [],
+            links: [
+              {
+                type: 1,
+                to: issue.url,
+                startIndex: 0,
+                endIndex: issue.key.length - 1,
+              },
+            ],
             height: 20,
           },
           description: {
@@ -67,13 +80,6 @@ export function buildCacooJson(issue: IssueData): string {
           primaryColor: color,
           secondaryColor: "#DCEBFF",
           dueDate: issue.dueDate ?? "",
-          link: {
-            enabled: true,
-            type: 1,
-            sheet: "",
-            url: issue.url,
-            function: null,
-          },
           externalAccountId: "",
         },
       },

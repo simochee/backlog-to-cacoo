@@ -29,22 +29,56 @@ describe("buildCacooJson", () => {
     expect(parsed.target).toBe("shapes");
   });
 
-  it("sets title text to issue key", () => {
+  it("sets title text to key + summary", () => {
     const parsed = JSON.parse(buildCacooJson(baseIssue));
-    expect(parsed.shapes[0].cacoo.title.text).toBe("PROJ-123");
+    expect(parsed.shapes[0].cacoo.title.text).toBe("PROJ-123 Fix login bug");
   });
 
-  it("sets description with summary and assignee", () => {
+  it("sets title styles with linked key and normal summary", () => {
+    const parsed = JSON.parse(buildCacooJson(baseIssue));
+    const styles = parsed.shapes[0].cacoo.title.styles;
+    expect(styles).toHaveLength(2);
+
+    // Key part: blue, bold, underline
+    expect(styles[0]).toMatchObject({
+      index: 0,
+      color: "2488fd",
+      bold: true,
+      underline: true,
+    });
+
+    // Summary part: dark, bold (starts after key)
+    expect(styles[1]).toMatchObject({
+      index: "PROJ-123".length,
+      color: "333333",
+      bold: true,
+    });
+    expect(styles[1].underline).toBeUndefined();
+  });
+
+  it("sets title link covering the issue key", () => {
+    const parsed = JSON.parse(buildCacooJson(baseIssue));
+    const links = parsed.shapes[0].cacoo.title.links;
+    expect(links).toHaveLength(1);
+    expect(links[0]).toMatchObject({
+      type: 1,
+      to: "https://example.backlog.jp/view/PROJ-123",
+      startIndex: 0,
+      endIndex: "PROJ-123".length - 1,
+    });
+  });
+
+  it("sets description with assignee only", () => {
     const parsed = JSON.parse(buildCacooJson(baseIssue));
     expect(parsed.shapes[0].cacoo.description.text).toBe(
-      "Fix login bug\n(担当: Taro Yamada)",
+      "担当: Taro Yamada",
     );
   });
 
-  it("sets description without assignee when empty", () => {
+  it("sets description to empty when assignee is empty", () => {
     const issue = { ...baseIssue, assignee: "" };
     const parsed = JSON.parse(buildCacooJson(issue));
-    expect(parsed.shapes[0].cacoo.description.text).toBe("Fix login bug");
+    expect(parsed.shapes[0].cacoo.description.text).toBe("");
   });
 
   it("sets due date", () => {
@@ -58,11 +92,9 @@ describe("buildCacooJson", () => {
     expect(parsed.shapes[0].cacoo.dueDate).toBe("");
   });
 
-  it("sets link URL", () => {
+  it("does not include card-level link", () => {
     const parsed = JSON.parse(buildCacooJson(baseIssue));
-    expect(parsed.shapes[0].cacoo.link.url).toBe(
-      "https://example.backlog.jp/view/PROJ-123",
-    );
+    expect(parsed.shapes[0].cacoo.link).toBeUndefined();
   });
 
   it("generates a unique uid", () => {
@@ -75,14 +107,6 @@ describe("buildCacooJson", () => {
   it("sets type to 12 (card type)", () => {
     const parsed = JSON.parse(buildCacooJson(baseIssue));
     expect(parsed.shapes[0].type).toBe(12);
-  });
-
-  it("includes title styles", () => {
-    const parsed = JSON.parse(buildCacooJson(baseIssue));
-    const styles = parsed.shapes[0].cacoo.title.styles;
-    expect(styles).toHaveLength(1);
-    expect(styles[0].bold).toBe(true);
-    expect(styles[0].size).toBe(14);
   });
 });
 
