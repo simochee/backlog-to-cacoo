@@ -1,8 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { copyToClipboard } from "./copy-to-clipboard";
 
+// jsdom does not provide ClipboardEvent, so we polyfill it for instanceof checks
+if (typeof globalThis.ClipboardEvent === "undefined") {
+  class ClipboardEventPolyfill extends Event {
+    readonly clipboardData: DataTransfer | null;
+    constructor(
+      type: string,
+      init?: EventInit & { clipboardData?: DataTransfer | null },
+    ) {
+      super(type, init);
+      this.clipboardData = init?.clipboardData ?? null;
+    }
+  }
+  globalThis.ClipboardEvent =
+    ClipboardEventPolyfill as unknown as typeof ClipboardEvent;
+}
+
 function createCopyEvent(setDataMock: ReturnType<typeof vi.fn>) {
-  const event = new Event("copy", { cancelable: true });
+  const event = new ClipboardEvent("copy", { cancelable: true });
   Object.defineProperty(event, "clipboardData", {
     value: { setData: setDataMock },
   });
