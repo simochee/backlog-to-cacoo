@@ -8,7 +8,7 @@ describe("extractIssueData", () => {
 
   it("extracts issue key from the page", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-123</span>
+      <span data-testid="issueKey">PROJ-123</span>
     `;
     const data = extractIssueData();
     expect(data.key).toBe("PROJ-123");
@@ -16,8 +16,8 @@ describe("extractIssueData", () => {
 
   it("extracts summary from the page", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">Fix login bug</span>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary"><div class="markdown-body">Fix login bug</div></span>
     `;
     const data = extractIssueData();
     expect(data.summary).toBe("Fix login bug");
@@ -25,16 +25,9 @@ describe("extractIssueData", () => {
 
   it("extracts assignee from the page", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">Fix login bug</span>
-      <table class="ticket__properties">
-        <tr>
-          <th>担当者</th>
-          <td>
-            <span class="user-icon-set__name">Taro Yamada</span>
-          </td>
-        </tr>
-      </table>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">Fix login bug</span>
+      <span data-testid="issueAssignee">Taro Yamada</span>
     `;
     const data = extractIssueData();
     expect(data.assignee).toBe("Taro Yamada");
@@ -42,23 +35,28 @@ describe("extractIssueData", () => {
 
   it("extracts due date from the page", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">task</span>
-      <table class="ticket__properties">
-        <tr>
-          <th>期限日</th>
-          <td>2026/03/15</td>
-        </tr>
-      </table>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
+      <span data-testid="dueDate"><span>期限日</span>2026/03/15</span>
     `;
     const data = extractIssueData();
     expect(data.dueDate).toBe("2026/03/15");
   });
 
-  it("returns null for missing due date", () => {
+  it("returns null when due date is a dash", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">task</span>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
+      <span data-testid="dueDate"><span>期限日</span>-</span>
+    `;
+    const data = extractIssueData();
+    expect(data.dueDate).toBeNull();
+  });
+
+  it("returns null for missing due date element", () => {
+    document.body.innerHTML = `
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
     `;
     const data = extractIssueData();
     expect(data.dueDate).toBeNull();
@@ -66,8 +64,8 @@ describe("extractIssueData", () => {
 
   it("returns empty string for missing assignee", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">task</span>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
     `;
     const data = extractIssueData();
     expect(data.assignee).toBe("");
@@ -75,8 +73,8 @@ describe("extractIssueData", () => {
 
   it("extracts current page URL", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">task</span>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
     `;
     const data = extractIssueData();
     expect(data.url).toBe(window.location.href);
@@ -84,14 +82,9 @@ describe("extractIssueData", () => {
 
   it("extracts issue type from the page", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">task</span>
-      <table class="ticket__properties">
-        <tr>
-          <th>種別</th>
-          <td>バグ</td>
-        </tr>
-      </table>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
+      <span data-testid="issueType">バグ</span>
     `;
     const data = extractIssueData();
     expect(data.type).toBe("バグ");
@@ -99,14 +92,9 @@ describe("extractIssueData", () => {
 
   it("extracts priority from the page", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">task</span>
-      <table class="ticket__properties">
-        <tr>
-          <th>優先度</th>
-          <td>高</td>
-        </tr>
-      </table>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
+      <a data-testid="issuePriority">高</a>
     `;
     const data = extractIssueData();
     expect(data.priority).toBe("高");
@@ -114,8 +102,8 @@ describe("extractIssueData", () => {
 
   it("returns empty string for missing type and priority", () => {
     document.body.innerHTML = `
-      <span class="ticket__key-number">PROJ-1</span>
-      <span class="ticket__summary">task</span>
+      <span data-testid="issueKey">PROJ-1</span>
+      <span data-testid="issueSummary">task</span>
     `;
     const data = extractIssueData();
     expect(data.type).toBe("");

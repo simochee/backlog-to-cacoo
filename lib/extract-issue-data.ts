@@ -11,45 +11,43 @@ export interface IssueData {
 /**
  * Backlog の課題ページから情報を取得する。
  *
- * TODO: セレクタは Backlog の現行 UI (React ベース) を想定しているが、
- *       実際の DOM 構造は変更される可能性がある。
- *       Classic UI には対応していない。
+ * セレクタは Backlog の現行 UI の data-testid 属性を使用している。
+ * Classic UI には対応していない。
  */
 export function extractIssueData(): IssueData {
-  // TODO: `.ticket__key-number` は推測セレクタ。実際の Backlog DOM で要検証。
   const key =
-    document.querySelector(".ticket__key-number")?.textContent?.trim() ?? "";
+    document.querySelector<HTMLElement>("[data-testid='issueKey']")?.textContent?.trim() ?? "";
 
-  // TODO: `.ticket__summary` は推測セレクタ。実際の Backlog DOM で要検証。
   const summary =
-    document.querySelector(".ticket__summary")?.textContent?.trim() ?? "";
+    document.querySelector<HTMLElement>("[data-testid='issueSummary']")?.textContent?.trim() ?? "";
 
-  const assignee = getPropertyValue("担当者", ".user-icon-set__name");
-  const dueDate = getPropertyValue("期限日") || null;
-  const type = getPropertyValue("種別");
-  const priority = getPropertyValue("優先度");
+  const assignee =
+    document.querySelector<HTMLElement>("[data-testid='issueAssignee']")?.textContent?.trim() ?? "";
+
+  const type =
+    document.querySelector<HTMLElement>("[data-testid='issueType']")?.textContent?.trim() ?? "";
+
+  const priority =
+    document.querySelector<HTMLElement>("[data-testid='issuePriority']")?.textContent?.trim() ?? "";
+
+  const dueDateEl = document.querySelector<HTMLElement>("[data-testid='dueDate']");
+  const dueDate = extractDateValue(dueDateEl);
+
   const url = window.location.href;
 
   return { key, summary, assignee, dueDate, type, priority, url };
 }
 
 /**
- * `.ticket__properties` テーブルからラベルに対応する値を取得する。
+ * 日付要素から日付値を取得する。
  *
- * TODO: `.ticket__properties` テーブル構造は推測。実際の DOM で要検証。
+ * Backlog の日付要素は `<span data-testid="dueDate"><span>期限日</span>2025/12/16</span>` の
+ * 構造になっており、ラベル部分を除いた日付テキストを取得する。
  */
-function getPropertyValue(label: string, childSelector?: string): string {
-  const rows = document.querySelectorAll(".ticket__properties tr");
-  for (const row of rows) {
-    const th = row.querySelector("th");
-    if (th?.textContent?.trim() === label) {
-      const td = row.querySelector("td");
-      if (!td) return "";
-      if (childSelector) {
-        return td.querySelector(childSelector)?.textContent?.trim() ?? "";
-      }
-      return td.textContent?.trim() ?? "";
-    }
-  }
-  return "";
+function extractDateValue(el: HTMLElement | null): string | null {
+  if (!el) return null;
+  const label = el.querySelector("span")?.textContent ?? "";
+  const fullText = el.textContent?.trim() ?? "";
+  const value = fullText.replace(label, "").trim();
+  return value && value !== "-" ? value : null;
 }
