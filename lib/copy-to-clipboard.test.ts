@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { copyToClipboard } from "./copy-to-clipboard";
 
-// jsdom does not provide ClipboardEvent, so we polyfill it for instanceof checks
+// Jsdom does not provide ClipboardEvent, so we polyfill it for instanceof checks
 if (typeof globalThis.ClipboardEvent === "undefined") {
   class ClipboardEventPolyfill extends Event {
     readonly clipboardData: DataTransfer | null;
@@ -28,7 +28,7 @@ function createCopyEvent(setDataMock: ReturnType<typeof vi.fn>) {
 describe("copyToClipboard", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    // jsdom does not provide document.execCommand
+    // Jsdom does not provide document.execCommand
     document.execCommand = vi.fn().mockReturnValue(true);
   });
 

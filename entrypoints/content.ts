@@ -1,13 +1,13 @@
-import { extractIssueData } from "@/lib/extract-issue-data";
+import { injectCopyButton, showToast } from "@/lib/ui";
 import { buildCacooJson } from "@/lib/build-cacoo-json";
 import { copyToClipboard } from "@/lib/copy-to-clipboard";
-import { injectCopyButton, showToast } from "@/lib/ui";
+import { extractIssueData } from "@/lib/extract-issue-data";
 
 export default defineContentScript({
-  matches: ["*://*.backlog.jp/view/*", "*://*.backlog.com/view/*"],
   main() {
     injectCopyButton(handleCopy);
   },
+  matches: ["*://*.backlog.jp/view/*", "*://*.backlog.com/view/*"],
 });
 
 function handleCopy(): void {

@@ -30,7 +30,7 @@ export function extractIssueData(): IssueData {
   const priority = getPropertyValue("優先度");
   const url = window.location.href;
 
-  return { key, summary, assignee, dueDate, type, priority, url };
+  return { assignee, dueDate, key, priority, summary, type, url };
 }
 
 /**
@@ -44,7 +44,9 @@ function getPropertyValue(label: string, childSelector?: string): string {
     const th = row.querySelector("th");
     if (th?.textContent?.trim() === label) {
       const td = row.querySelector("td");
-      if (!td) return "";
+      if (!td) {
+        return "";
+      }
       if (childSelector) {
         return td.querySelector(childSelector)?.textContent?.trim() ?? "";
       }

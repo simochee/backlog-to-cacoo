@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildCacooJson, resolveColor } from "./build-cacoo-json";
 import type { IssueData } from "./extract-issue-data";
 
 const baseIssue: IssueData = {
-  key: "PROJ-123",
-  summary: "Fix login bug",
   assignee: "Taro Yamada",
   dueDate: "2026/03/15",
-  type: "バグ",
+  key: "PROJ-123",
   priority: "高",
+  summary: "Fix login bug",
+  type: "バグ",
   url: "https://example.backlog.jp/view/PROJ-123",
 };
 
@@ -67,9 +67,7 @@ describe("buildCacooJson", () => {
 
   it("generates a unique uid", () => {
     const parsed = JSON.parse(buildCacooJson(baseIssue));
-    expect(parsed.shapes[0].uid).toBe(
-      "550e8400-e29b-41d4-a716-446655440000",
-    );
+    expect(parsed.shapes[0].uid).toBe("550e8400-e29b-41d4-a716-446655440000");
   });
 
   it("sets type to 12 (card type)", () => {
@@ -79,7 +77,7 @@ describe("buildCacooJson", () => {
 
   it("includes title styles", () => {
     const parsed = JSON.parse(buildCacooJson(baseIssue));
-    const styles = parsed.shapes[0].cacoo.title.styles;
+    const { styles } = parsed.shapes[0].cacoo.title;
     expect(styles).toHaveLength(1);
     expect(styles[0].bold).toBe(true);
     expect(styles[0].size).toBe(14);
