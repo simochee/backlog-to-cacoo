@@ -4,16 +4,57 @@ const COLOR_RED = "#E65050";
 const COLOR_BLUE = "#4B91FA";
 const COLOR_GREEN = "#69C955";
 
+const TITLE_CONTAINER_WIDTH = 236;
+const TITLE_LINE_HEIGHT = 20;
+const TITLE_FONT = 'bold 14px "Open Sans", sans-serif';
+const BASE_CARD_HEIGHT = 113;
+
 export function resolveColor(type: string, priority: string): string {
   if (type === "バグ" || priority === "高") return COLOR_RED;
   if (priority === "低") return COLOR_GREEN;
   return COLOR_BLUE;
 }
 
+export function measureTitleHeight(text: string): number {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return TITLE_LINE_HEIGHT;
+
+  ctx.font = TITLE_FONT;
+
+  let lines = 1;
+  let currentWidth = 0;
+
+  for (const segment of text.split(/(?<=\s)/)) {
+    const segmentWidth = ctx.measureText(segment).width;
+
+    if (segmentWidth > TITLE_CONTAINER_WIDTH) {
+      // Handle words wider than container (overflow-wrap: break-word)
+      for (const char of segment) {
+        const charWidth = ctx.measureText(char).width;
+        if (currentWidth + charWidth > TITLE_CONTAINER_WIDTH && currentWidth > 0) {
+          lines++;
+          currentWidth = 0;
+        }
+        currentWidth += charWidth;
+      }
+    } else if (currentWidth + segmentWidth > TITLE_CONTAINER_WIDTH && currentWidth > 0) {
+      lines++;
+      currentWidth = segmentWidth;
+    } else {
+      currentWidth += segmentWidth;
+    }
+  }
+
+  return Math.min(lines, 2) * TITLE_LINE_HEIGHT;
+}
+
 export function buildCacooJson(issue: IssueData): string {
   const description = issue.assignee ? `担当: ${issue.assignee}` : "";
   const titleText = `${issue.key} ${issue.summary}`;
   const color = resolveColor(issue.type, issue.priority);
+  const titleHeight = measureTitleHeight(titleText);
+  const cardHeight = BASE_CARD_HEIGHT + titleHeight - TITLE_LINE_HEIGHT;
 
   const payload = {
     target: "shapes",
@@ -26,7 +67,7 @@ export function buildCacooJson(issue: IssueData): string {
         locked: false,
         bounds: {
           top: 3000,
-          bottom: 3137,
+          bottom: 3000 + cardHeight,
           left: 1100,
           right: 1360,
         },
@@ -60,7 +101,7 @@ export function buildCacooJson(issue: IssueData): string {
                 endIndex: issue.key.length - 1,
               },
             ],
-            height: 20,
+            height: titleHeight,
           },
           description: {
             text: description,
