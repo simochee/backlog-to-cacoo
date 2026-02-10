@@ -1,32 +1,99 @@
 import styles from "./ui.module.css";
 
 const BUTTON_SELECTOR = "[data-testid='cacoo-copy-button']";
-const TOAST_SELECTOR = "[data-testid='cacoo-toast']";
+const ANCHOR_SELECTOR = "#copyKey-help";
 
 /**
- * Backlog 課題ページに「Copy to Cacoo」ボタンを挿入する。
- * 既にボタンが存在する場合は何もしない。
- *
- * TODO: 挿入先の要素 (課題タイトル付近) のセレクタは実際の Backlog DOM で要検証。
- *       現状は body 末尾に追加している。
+ * DOM に指定セレクタの要素が出現するたびにコールバックを実行する。
+ * SPA のページ遷移にも対応する。
  */
-export function injectCopyButton(onClick: () => void): void {
-  if (document.querySelector(BUTTON_SELECTOR)) return;
+function observeMutation(
+  selector: string,
+  callback: (el: Element) => void,
+): void {
+  const check = () => {
+    const el = document.querySelector(selector);
+    if (el) callback(el);
+  };
 
-  const button = document.createElement("button");
-  button.setAttribute("data-testid", "cacoo-copy-button");
-  button.className = styles.copyButton ?? "";
-  button.textContent = "Copy to Cacoo";
-  button.addEventListener("click", onClick);
+  check();
 
-  // TODO: 実際の Backlog ページではタイトル横などより適切な場所に挿入する
-  document.body.appendChild(button);
+  new MutationObserver(check).observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 /**
- * トースト通知を表示し、指定時間後に自動で削除する。
+ * Backlog 課題ページの課題キーコピーボタン (#copyKey-help) の横に
+ * 「Copy to Cacoo」ボタンを挿入する。
+ * MutationObserver で #copyKey-help の出現を監視し、SPA のページ遷移にも対応する。
+ */
+export function injectCopyButton(onClick: () => void): void {
+  observeMutation(ANCHOR_SELECTOR, (anchor) => {
+    if (document.querySelector(BUTTON_SELECTOR)) return;
+
+    const wrapper = document.createElement("span");
+    wrapper.className = "copy-key-btn ticket__key-copy";
+    wrapper.style.translate = "36px";
+
+    const button = document.createElement("button");
+    button.setAttribute("data-testid", "cacoo-copy-button");
+    button.className = [
+      "icon-button",
+      "icon-button--default",
+      "simptip-position-right",
+      "simptip-movable",
+      "simptip-smooth",
+    ].join(" ");
+    button.setAttribute("data-tooltip", "Copy to Cacoo");
+    button.addEventListener("click", onClick);
+
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "copy-trigger";
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("role", "image");
+    svg.setAttribute("class", "icon -medium");
+
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttributeNS(
+      "http://www.w3.org/1999/xlink",
+      "xlink:href",
+      "/images/svg/sprite.symbol.svg#icon_link",
+    );
+
+    svg.appendChild(use);
+    iconSpan.appendChild(svg);
+    button.appendChild(iconSpan);
+    wrapper.appendChild(button);
+
+    anchor.insertAdjacentElement("afterend", wrapper);
+  });
+}
+
+interface BacklogGlobal {
+  Backlog?: {
+    StatusBar?: {
+      init(): void;
+      showTextAndHide(text: string): void;
+    };
+  };
+}
+
+/**
+ * 通知を表示する。
+ * Backlog の StatusBar が利用できる場合はそちらを使用し、
+ * 利用できない場合はカスタムトーストにフォールバックする。
  */
 export function showToast(message: string, duration = 2000): void {
+  const backlog = (window as unknown as BacklogGlobal).Backlog;
+  if (backlog?.StatusBar) {
+    backlog.StatusBar.init();
+    backlog.StatusBar.showTextAndHide(message);
+    return;
+  }
+
   const toast = document.createElement("div");
   toast.setAttribute("data-testid", "cacoo-toast");
   toast.className = styles.toast ?? "";

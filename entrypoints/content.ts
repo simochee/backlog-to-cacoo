@@ -16,5 +16,5 @@ function handleCopy(): void {
   const plainText = `${issue.key} ${issue.summary}`;
 
   copyToClipboard(cacooJson, plainText);
-  showToast("Copied!");
+  showToast("Cacoo カードをクリップボードにコピーしました");
 }
