@@ -68,17 +68,14 @@ describe("buildCacooJson", () => {
     });
   });
 
-  it("sets description with assignee only", () => {
+  it("sets description to empty regardless of assignee", () => {
     const parsed = JSON.parse(buildCacooJson(baseIssue));
-    expect(parsed.shapes[0].cacoo.description.text).toBe(
-      "担当: Taro Yamada",
-    );
+    expect(parsed.shapes[0].cacoo.description.text).toBe("");
   });
 
-  it("sets description to empty when assignee is empty", () => {
-    const issue = { ...baseIssue, assignee: "" };
-    const parsed = JSON.parse(buildCacooJson(issue));
-    expect(parsed.shapes[0].cacoo.description.text).toBe("");
+  it("sets expanded to false for collapsed card", () => {
+    const parsed = JSON.parse(buildCacooJson(baseIssue));
+    expect(parsed.shapes[0].cacoo.expanded).toBe(false);
   });
 
   it("sets due date", () => {

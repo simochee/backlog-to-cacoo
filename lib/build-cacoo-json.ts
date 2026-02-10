@@ -7,7 +7,7 @@ const COLOR_GREEN = "#69C955";
 const TITLE_CONTAINER_WIDTH = 236;
 const TITLE_LINE_HEIGHT = 20;
 const TITLE_FONT = 'bold 14px "Open Sans", sans-serif';
-const BASE_CARD_HEIGHT = 113;
+const BASE_CARD_HEIGHT = 91;
 
 export function resolveColor(type: string, priority: string): string {
   if (type === "バグ" || priority === "高") return COLOR_RED;
@@ -50,7 +50,7 @@ export function measureTitleHeight(text: string): number {
 }
 
 export function buildCacooJson(issue: IssueData): string {
-  const description = issue.assignee ? `担当: ${issue.assignee}` : "";
+  const description = "";
   const titleText = `${issue.key} ${issue.summary}`;
   const color = resolveColor(issue.type, issue.priority);
   const titleHeight = measureTitleHeight(titleText);
@@ -117,7 +117,7 @@ export function buildCacooJson(issue: IssueData): string {
             links: [],
             height: 18,
           },
-          expanded: true,
+          expanded: false,
           primaryColor: color,
           secondaryColor: "#DCEBFF",
           dueDate: issue.dueDate ?? "",
